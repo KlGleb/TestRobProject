@@ -1,28 +1,21 @@
-version: 0.1
+#
+# Build configuration for Circle CI
+#
 
-phases:
-  install:
-    commands:
-      - echo Install started on `date`
-  pre_build:
-    commands:
-      - echo Pre Build started on `date`
-      - wget http://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
-      - tar -xvf android-sdk_r24.4.1-linux.tgz
-      - sudo mv android-sdk-linux /opt/
-      - export ANDROID_HOME=/opt/android-sdk-linux
-      - export PATH=${PATH}:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
-      - mkdir $ANDROID_HOME/licenses
-      - echo 8933bad161af4178b1185d1a37fbf41ea5269c55 > $ANDROID_HOME/licenses/android-sdk-license
-      - /opt/android-sdk-linux/tools/android update sdk --no-ui
-  build:
-    commands:
-      - echo Build started on `date`
-      - ./gradlew --debug --stacktrace build
-  post_build:
-    commands:
-      - echo Build completed on `date`
-artifacts:
-  files:
-    - target/aws-code-build-android.jar
-  discard-paths: yes
+general:
+    artifacts:
+        - /home/ubuntu/your-app-name/app/build/outputs/apk/
+
+machine:
+    environment:
+        ANDROID_HOME: /usr/local/android-sdk-linux
+
+dependencies:
+    override:
+        - echo y | android update sdk --no-ui --all --filter tools,platform-tools,build-tools-19.1.0,android-19,extra-google-m2repository,extra-google-google_play_services,extra-android-support
+        - ANDROID_HOME=/usr/local/android-sdk-linux ./gradlew dependencies
+
+test:
+    override:
+        - (./gradlew assemble):
+            timeout: 360
